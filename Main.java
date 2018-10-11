@@ -35,7 +35,7 @@ public class Main {
    * to make sure we have adequate items for our operation; useful
    * for avoiding empty stack exceptions.
    */
-  public State createNFA(String Expression) {
+  private State createNFA(String Expression) {
     Stack<State> StateStack = new Stack();
     totalStates = 0; //Starting a new NFA, reset this.
 
@@ -92,7 +92,7 @@ public class Main {
 
   /* Returns the first state of an NFA which accepts
     a single character c */
-  public State singleChar(char c) {
+  private State singleChar(char c) {
    State newStart = new State(0, c, null, null,  true,false,false);
    assignState(newStart);
    State newFin = new State(0,'0', null, null, false,true,false);
@@ -196,12 +196,11 @@ public class Main {
 
   /* Assigns a state number to a state using the
    global variable totalStates */
-  public void assignState(State check) {
-    if(check.counted == false) {
+  private void assignState(State check) {
+    if(!check.counted) {
       check.state = totalStates;
       check.counted = true;
       totalStates++;
-      return;
     }
   }
 
@@ -209,8 +208,8 @@ public class Main {
    * state. First checks to see if the given is the final state,
    * otherwise recursively checks all possible paths through NFA
    */
-  public State fetchFinal(State check) {
-    if(check.finalState == true) {
+  private State fetchFinal(State check) {
+    if(check.finalState) {
       return check;
     }
     else {
@@ -222,7 +221,7 @@ public class Main {
       if(check.j2 != null) {
         temp2 = fetchFinal(check.j2);
       }
-      if(temp.finalState == true) {
+      if(temp.finalState) {
         return temp;
       }
       else {
@@ -234,15 +233,39 @@ public class Main {
 
   /* Helper function which makes sure the stack
      is not empty and exits gracefully if it is */
-  public void validateStack(Stack StateStack) {
+  private void validateStack(Stack StateStack) {
     if(StateStack.empty()) {
       System.out.println("Invalid expression!");
       System.exit(1);
     }
   }
 
-  public void printNFA(String Expression, State NFA) {
+  /* Take the head of an NFA and the expression and print output */
+  private void printNFA(String Expression, State NFA) {
+    System.out.format("Expression: %s",Expression);
+    printTransitions(NFA);
+    System.out.print("\n\n____________________ ");
+  }
 
+  private void printTransitions(State NFA) {
+    if(NFA.startState) {
+      System.out.print("S");
+    }
+    if(NFA.finalState) {
+      System.out.print("F");
+    }
+    if(NFA.j != null && NFA.j2 != null) {
+      System.out.format(" (q%d, %s) ->    q%s, q%S \n",NFA.state,NFA.label,NFA.j,NFA.j2.state);
+    }
+    if(NFA.j != null && NFA.j2 == null) {
+      System.out.format(" (q%d, %s) ->    q%s\n",NFA.state,NFA.label,NFA.j.state);
+    }
+    if(NFA.j != null) {
+      printTransitions(NFA.j);
+    }
+    if(NFA.j2 != null) {
+      printTransitions(NFA.j2);
+    }
   }
 
 }
