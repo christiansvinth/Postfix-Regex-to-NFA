@@ -23,9 +23,11 @@ public class State {
   char label;
   State j;
   State j2;
+  State j3;   //Used only for kleene star cases
   boolean startState;
   boolean finalState;
   boolean counted;
+  boolean printed;
 
 
   public State(int state, char label, State j, State j2, boolean startState, boolean finalState, boolean counted) {
@@ -36,5 +38,7 @@ public class State {
     this.startState = startState;
     this.finalState = finalState;
     this.counted = counted;
+    this.printed = false;
+    this.j3 = null;
   }
 }

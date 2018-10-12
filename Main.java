@@ -55,6 +55,7 @@ public class Main {
 
         State newState = concat(Start1,Start2);
         StateStack.push(newState);
+        continue;
       }
       // Create new Union NFA
       if(c == '|') {
@@ -66,6 +67,7 @@ public class Main {
 
         State newState = union(Start1,Start2);
         StateStack.push(newState);
+        continue;
       }
       // Create new Kleene NFA
       if(c == '*') {
@@ -73,6 +75,7 @@ public class Main {
         State Start1 = StateStack.pop();
         State newState = kleeneStar(Start1);
         StateStack.push(newState);
+        continue;
       }
       // Create new NFA which accepts char c
       else {
@@ -99,6 +102,7 @@ public class Main {
    assignState(newStart);
    State newFin = new State(0,'0', null, null, false,true,false);
    assignState(newFin);
+   newStart.j = newFin;
    return newStart;
   }
 
@@ -169,24 +173,17 @@ public class Main {
    * handed.
    */
   private State kleeneStar(State oldStart) {
-    oldStart.startState = false;
     //Create a new state which is the start and final state of our new shiny Kleene NFA
     State newStart = new State(0,'E',oldStart,null,true,true,false);
     assignState(newStart);
 
     //Now to make the old final state point to our new start state
    State oldFin = fetchFinal(oldStart);
+   oldStart.startState = false;
    oldFin.finalState = false;
    oldFin.label = 'E';
-   if(oldFin.j != null) {
-     oldFin.j = newStart;
-   }
-   else {
-     oldFin.j2 = newStart;
-   }
-
+   oldFin.j3 = newStart;
    return newStart;
-
   }
 
   /*
@@ -211,12 +208,12 @@ public class Main {
    * otherwise recursively checks all possible paths through NFA
    */
   private State fetchFinal(State check) {
-    State temp = null;
-    State temp2 = null;
     if(check.finalState) {
       return check;
     }
     else {
+      State temp = null;
+      State temp2 = null;
 
       if (check.j != null) {
         temp = fetchFinal(check.j);
@@ -224,15 +221,13 @@ public class Main {
       if (check.j2 != null) {
         temp2 = fetchFinal(check.j2);
       }
+      if(temp != null && temp.finalState == true) {
+        return temp;
+      }
+      else {
+        return temp2;
+      }
     }
-    if( temp != null && temp.finalState) {
-      return temp;
-    }
-    else {
-      return temp2;
-    }
-
-
   }
 
   /* Helper function which makes sure the stack
@@ -246,29 +241,47 @@ public class Main {
 
   /* Take the head of an NFA and the expression and print output */
   private void printNFA(String Expression, State NFA) {
-    System.out.format("Expression: %s",Expression);
+    System.out.format("Expression: %s \n",Expression);
     printTransitions(NFA);
-    System.out.print("\n\n____________________ ");
+    System.out.print("\n____________________\n");
   }
 
   private void printTransitions(State NFA) {
-    if(NFA.startState) {
-      System.out.print("S");
-    }
-    if(NFA.finalState) {
-      System.out.print("F");
-    }
-    if(NFA.j != null && NFA.j2 != null) {
-      System.out.format(" (q%d, %s) ->    q%s, q%S \n",NFA.state,NFA.label,NFA.j,NFA.j2.state);
-    }
-    if(NFA.j != null && NFA.j2 == null) {
-      System.out.format(" (q%d, %s) ->    q%s\n",NFA.state,NFA.label,NFA.j.state);
-    }
-    if(NFA.j != null) {
-      printTransitions(NFA.j);
-    }
-    if(NFA.j2 != null) {
-      printTransitions(NFA.j2);
+    int printed = 0;
+    if(!NFA.printed) {
+      if (NFA.startState) {
+        System.out.print("S ");
+      }
+      if (NFA.finalState) {
+        System.out.print("F ");
+      }
+      if(!(NFA.startState || NFA.finalState)) {
+        System.out.print("  ");
+      }
+      if (NFA.j != null && NFA.j2 != null) {
+        printed = 1;
+        System.out.format("(q%d, %s) ->    q%s, q%s", NFA.state, NFA.label, NFA.j.state, NFA.j2.state);
+        if(NFA.j3 != null) { System.out.print(", q" + NFA.j3.state); }
+        NFA.printed = true;
+        System.out.print("\n");
+      }
+      if (NFA.j != null && NFA.j2 == null) {
+        printed = 1;
+        System.out.format("(q%d, %s) ->    q%s", NFA.state, NFA.label, NFA.j.state);
+        if(NFA.j3 != null) { System.out.print(", q" + NFA.j3.state); }
+        NFA.printed = true;
+        System.out.print("\n");
+      }
+      if (printed == 0) {
+        System.out.format("(q%d, E)  \n", NFA.state);
+        NFA.printed = true;
+      }
+      if (NFA.j != null) {
+        printTransitions(NFA.j);
+      }
+      if (NFA.j2 != null) {
+        printTransitions(NFA.j2);
+      }
     }
   }
 
