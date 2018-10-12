@@ -10,15 +10,17 @@ public class Main {
    **********************************
    */
 
-  public  void main(String args[]) throws IOException {
+  public static void main(String args[]) throws IOException {
     String fileName = args[0];
     try {
-      BufferedReader input = new BufferedReader( new FileReader(fileName));
+      BufferedReader input = new BufferedReader
+          (new InputStreamReader(new FileInputStream(fileName)));
       String thisLine;
       while((thisLine = input.readLine()) != null) {
         String thisExpression = thisLine;
-        State thisNFA = createNFA(thisExpression);
-        printNFA(thisLine,thisNFA);
+        Main temp = new Main();
+        State thisNFA = temp.createNFA(thisExpression);
+        temp.printNFA(thisLine,thisNFA);
       }
       input.close();
     } catch(Exception e) {
@@ -209,26 +211,28 @@ public class Main {
    * otherwise recursively checks all possible paths through NFA
    */
   private State fetchFinal(State check) {
+    State temp = null;
+    State temp2 = null;
     if(check.finalState) {
       return check;
     }
     else {
-      State temp = null;
-      State temp2 = null;
-      if(check.j != null) {
+
+      if (check.j != null) {
         temp = fetchFinal(check.j);
       }
-      if(check.j2 != null) {
+      if (check.j2 != null) {
         temp2 = fetchFinal(check.j2);
       }
-      if(temp.finalState) {
-        return temp;
-      }
-      else {
-        return temp2;
-      }
-
     }
+    if( temp != null && temp.finalState) {
+      return temp;
+    }
+    else {
+      return temp2;
+    }
+
+
   }
 
   /* Helper function which makes sure the stack
