@@ -1,5 +1,5 @@
 # Postfix-Regex-to-NFA
-CS 317 Project 1
+
 
 ------------
 Build Instructions
